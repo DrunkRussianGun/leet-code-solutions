@@ -1,8 +1,44 @@
 ﻿namespace Problem23;
 
-public class Solution {
-	public ListNode MergeKLists(ListNode[] lists) {
-		
+public class Solution
+{
+	public ListNode? MergeKLists(ListNode?[]? lists)
+	{
+		var heap = CreateHeapFromTopNodes(lists);
+		if (heap.Count <= 0)
+			return null;
+
+		var mergedList = PopAndPushNext(heap);
+		var currentNode = mergedList;
+		while (heap.Count > 0)
+		{
+			var nextNode = PopAndPushNext(heap);
+			currentNode.next = nextNode;
+			currentNode = nextNode;
+		}
+
+		return mergedList;
+	}
+
+	private static ListNode PopAndPushNext(Heap<int, ListNode> heap)
+	{
+		var currentNode = heap.Peek().Value;
+		var nextNode = currentNode.next;
+		if (nextNode is not null)
+			heap.PopAndPush(nextNode.val, nextNode);
+		else
+			heap.Pop();
+		return currentNode;
+	}
+
+	private static Heap<int, ListNode> CreateHeapFromTopNodes(IEnumerable<ListNode?>? lists)
+	{
+		var heap = new Heap<int, ListNode>();
+		if (lists is not null)
+			foreach (var topNode in lists)
+				if (topNode is not null)
+					heap.Push(topNode.val, topNode);
+		return heap;
 	}
 }
 
