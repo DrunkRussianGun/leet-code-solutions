@@ -5,3 +5,127 @@ public class Solution {
 		
 	}
 }
+
+public class Heap<TKey, TValue>
+{
+	private const int rootIndex = 0;
+
+	private readonly List<KeyValuePair<TKey, TValue>> nodes = new();
+	private readonly IComparer<TKey> comparer;
+
+	public int Count => nodes.Count;
+
+	public Heap()
+	{
+		comparer = Comparer<TKey>.Default;
+	}
+
+	public Heap(IComparer<TKey>? comparer)
+	{
+		this.comparer = comparer ?? Comparer<TKey>.Default;
+	}
+
+	public KeyValuePair<TKey, TValue> Peek()
+	{
+		if (nodes.Count <= 0)
+			throw HeapIsEmptyException();
+
+		return nodes[rootIndex];
+	}
+
+	public KeyValuePair<TKey, TValue> Pop()
+	{
+		if (nodes.Count <= 0)
+			throw HeapIsEmptyException();
+
+		var previousRoot = nodes[rootIndex];
+		var lastNodeIndex = nodes.Count - 1;
+		nodes[rootIndex] = nodes[lastNodeIndex];
+		nodes.RemoveAt(lastNodeIndex);
+		DownHeap(rootIndex);
+
+		return previousRoot;
+	}
+
+	public void Push(TKey key, TValue value)
+	{
+		nodes.Add(NewNode(key, value));
+		UpHeap(nodes.Count - 1);
+	}
+
+	public KeyValuePair<TKey, TValue> PopAndPush(TKey key, TValue value)
+	{
+		if (nodes.Count <= 0)
+			throw HeapIsEmptyException();
+
+		var previousRoot = nodes[rootIndex];
+		nodes[rootIndex] = NewNode(key, value);
+		if (comparer.Compare(previousRoot.Key, key) < 0)
+			DownHeap(rootIndex);
+
+		return previousRoot;
+	}
+
+	private void UpHeap(int nodeIndex)
+	{
+		var currentIndex = nodeIndex;
+		while (currentIndex != rootIndex)
+		{
+			var parentIndex = GetParentIndex(currentIndex);
+			if (comparer.Compare(nodes[parentIndex].Key, nodes[currentIndex].Key) <= 0)
+				break;
+
+			SwapNodes(parentIndex, currentIndex);
+			currentIndex = parentIndex;
+		}
+	}
+
+	private void DownHeap(int nodeIndex)
+	{
+		var currentIndex = nodeIndex;
+		while (true)
+		{
+			var leftChildIndex = GetLeftChildIndex(currentIndex);
+			if (leftChildIndex >= nodes.Count)
+				break;
+			var minNodeIndex = comparer.Compare(nodes[leftChildIndex].Key, nodes[currentIndex].Key) < 0
+				? leftChildIndex
+				: currentIndex;
+
+			var rightChildIndex = GetRightChildIndex(currentIndex);
+			if (rightChildIndex < nodes.Count
+					&& comparer.Compare(nodes[rightChildIndex].Key, nodes[minNodeIndex].Key) < 0)
+				minNodeIndex = rightChildIndex;
+
+			if (minNodeIndex != currentIndex)
+			{
+				SwapNodes(minNodeIndex, currentIndex);
+				currentIndex = minNodeIndex;
+			}
+			else
+				break;
+		}
+	}
+
+	private void SwapNodes(int firstIndex, int secondIndex)
+	{
+		// ReSharper disable once SwapViaDeconstruction
+		var buffer = nodes[firstIndex];
+		nodes[firstIndex] = nodes[secondIndex];
+		nodes[secondIndex] = buffer;
+	}
+	
+	private static KeyValuePair<TKey, TValue> NewNode(TKey key, TValue value)
+		=> new(key, value);
+
+	private static int GetParentIndex(int nodeIndex)
+		=> (nodeIndex - 1) / 2;
+
+	private static int GetLeftChildIndex(int nodeIndex)
+		=> nodeIndex * 2 + 1;
+
+	private static int GetRightChildIndex(int nodeIndex)
+		=> nodeIndex * 2 + 2;
+
+	private static InvalidOperationException HeapIsEmptyException() => new("Heap is empty");
+}
