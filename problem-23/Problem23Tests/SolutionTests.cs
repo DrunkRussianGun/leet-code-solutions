@@ -24,6 +24,13 @@ public class SolutionTests
 		yield return new TestCaseData(
 			new[]
 			{
+				ToListNodes(1, 2, 2),
+				ToListNodes(1, 1, 2)
+			},
+			ToListNodes(1, 1, 1, 2, 2, 2));
+		yield return new TestCaseData(
+			new[]
+			{
 				ToListNodes(1, 4, 5),
 				ToListNodes(1, 3, 4),
 				null,
