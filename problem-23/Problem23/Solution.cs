@@ -1,4 +1,7 @@
-﻿namespace Problem23;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Problem23;
 
 public class Solution
 {
