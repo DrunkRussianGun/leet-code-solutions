@@ -3,6 +3,7 @@ using Problem23;
 
 namespace Problem23Tests;
 
+[Parallelizable(ParallelScope.All)]
 public class HeapTests
 {
 	public class WhenEmpty : HeapTests

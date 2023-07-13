@@ -3,6 +3,7 @@ using Problem141;
 
 namespace Problem141Tests;
 
+[Parallelizable(ParallelScope.All)]
 public class SolutionTests
 {
 	private readonly Solution solution = new();
