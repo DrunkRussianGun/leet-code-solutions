@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<Import Project="$([MSBuild]::GetPathOfFileAbove('Test.Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+	<ItemGroup>
+		<ProjectReference Include="..\Problem480\Problem480.csproj" />
+	</ItemGroup>
+
+</Project>
