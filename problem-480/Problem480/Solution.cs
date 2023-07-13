@@ -1,0 +1,7 @@
+﻿namespace Problem480;
+
+public class Solution {
+	public double[] MedianSlidingWindow(int[] nums, int k) {
+		
+	}
+}
