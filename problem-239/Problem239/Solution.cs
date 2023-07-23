@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Problem239;
 
@@ -8,7 +7,7 @@ public class Solution
 	public int[] MaxSlidingWindow(int[] values, int windowSize)
 	{
 		var results = new int[values.Length - windowSize + 1];
-		var currentMaximums = new Deque<int>(windowSize);
+		var currentMaximums = new IntDeque(windowSize);
 
 		for (var i = 0; i < windowSize; ++i)
 			Add(currentMaximums, values[i]);
@@ -27,7 +26,7 @@ public class Solution
 		return results;
 	}
 
-	private static void Add(Deque<int> currentMaximums, int nextValue)
+	private static void Add(IntDeque currentMaximums, int nextValue)
 	{
 		var nextValueIndex = currentMaximums.BinarySearch(nextValue);
 		if (nextValueIndex < 0)
@@ -39,9 +38,9 @@ public class Solution
 	}
 }
 
-public class Deque<T>
+public class IntDeque
 {
-	private readonly T[] elements;
+	private readonly int[] elements;
 
 	private int firstElementIndex;
 	private int lastElementIndex => IncreaseIndex(firstElementIndex, Size - 1);
@@ -50,12 +49,12 @@ public class Deque<T>
 	public int Size { get; private set; }
 	public int MaxSize => elements.Length;
 
-	public Deque(int maxSize)
+	public IntDeque(int maxSize)
 	{
-		elements = new T[maxSize];
+		elements = new int[maxSize];
 	}
 
-	public T this[int index]
+	public int this[int index]
 	{
 		get
 		{
@@ -72,16 +71,15 @@ public class Deque<T>
 		}
 	}
 
-	public T First() => Size > 0 ? elements[firstElementIndex] : throw Empty();
+	public int First() => Size > 0 ? elements[firstElementIndex] : throw Empty();
 
-	public T Last() => Size > 0 ? elements[lastElementIndex] : throw Empty();
+	public int Last() => Size > 0 ? elements[lastElementIndex] : throw Empty();
 
-	public int BinarySearch(T elementToSearch, Comparer<T>? comparer = null)
+	public int BinarySearch(int elementToSearch)
 	{
 		if (Size <= 0)
 			return 0;
 
-		comparer ??= Comparer<T>.Default;
 		var leftBound = firstElementIndex;
 		var rightBound = lastElementIndex;
 		while (true)
@@ -92,22 +90,22 @@ public class Deque<T>
 
 			var currentElementIndex = IncreaseIndex(leftBound, difference / 2);
 			var currentElement = elements[currentElementIndex];
-			if (comparer.Compare(elementToSearch, currentElement) <= 0)
+			if (elementToSearch <= currentElement)
 				rightBound = currentElementIndex;
 			else
 				leftBound = NextIndex(currentElementIndex);
 		}
 
 		var outerIndex = DecreaseIndex(leftBound, firstElementIndex);
-		return comparer.Compare(elements[leftBound], elementToSearch) switch
-		{
-			< 0 => ~(outerIndex + 1),
-			> 0 => ~outerIndex,
-			0 => outerIndex
-		};
+		var leftBoundElement = elements[leftBound];
+		if (leftBoundElement < elementToSearch)
+			return ~(outerIndex + 1);
+		if (leftBoundElement > elementToSearch)
+			return ~outerIndex;
+		return outerIndex;
 	}
 
-	public void Append(T value)
+	public void Append(int value)
 	{
 		if (Size >= MaxSize)
 			throw MaxSizeReached();
@@ -116,7 +114,7 @@ public class Deque<T>
 		++Size;
 	}
 
-	public void Prepend(T value)
+	public void Prepend(int value)
 	{
 		if (Size >= MaxSize)
 			throw MaxSizeReached();
