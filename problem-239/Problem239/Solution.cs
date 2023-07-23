@@ -43,15 +43,15 @@ public class IntDeque
 	private readonly int[] elements;
 
 	private int firstElementIndex;
-	private int lastElementIndex => IncreaseIndex(firstElementIndex, Size - 1);
-	private int elementToAppendIndex => IncreaseIndex(firstElementIndex, Size);
+	private int size;
 
-	public int Size { get; private set; }
-	public int MaxSize => elements.Length;
+	public readonly int MaxSize;
+	public int Size => size;
 
 	public IntDeque(int maxSize)
 	{
 		elements = new int[maxSize];
+		MaxSize = maxSize;
 	}
 
 	public int this[int index]
@@ -59,11 +59,11 @@ public class IntDeque
 		get
 		{
 			var innerIndex = IncreaseIndex(firstElementIndex, index);
-			return index < Size ? elements[innerIndex] : throw OutOfSize(index);
+			return index < size ? elements[innerIndex] : throw OutOfSize(index);
 		}
 		set
 		{
-			if (index >= Size)
+			if (index >= size)
 				throw OutOfSize(index);
 			
 			var innerIndex = IncreaseIndex(firstElementIndex, index);
@@ -71,17 +71,17 @@ public class IntDeque
 		}
 	}
 
-	public int First() => Size > 0 ? elements[firstElementIndex] : throw Empty();
+	public int First() => size > 0 ? elements[firstElementIndex] : throw Empty();
 
-	public int Last() => Size > 0 ? elements[lastElementIndex] : throw Empty();
+	public int Last() => size > 0 ? elements[IncreaseIndex(firstElementIndex, size - 1)] : throw Empty();
 
 	public int BinarySearch(int elementToSearch)
 	{
-		if (Size <= 0)
+		if (size <= 0)
 			return 0;
 
 		var leftBound = firstElementIndex;
-		var rightBound = lastElementIndex;
+		var rightBound = IncreaseIndex(firstElementIndex, size - 1);
 		while (true)
 		{
 			var difference = GetDifference(leftBound, rightBound);
@@ -93,7 +93,11 @@ public class IntDeque
 			if (elementToSearch <= currentElement)
 				rightBound = currentElementIndex;
 			else
-				leftBound = NextIndex(currentElementIndex);
+			{
+				leftBound = currentElementIndex + 1;
+				if (leftBound >= MaxSize)
+					leftBound = 0;
+			}
 		}
 
 		var outerIndex = DecreaseIndex(leftBound, firstElementIndex);
@@ -107,20 +111,20 @@ public class IntDeque
 
 	public void Append(int value)
 	{
-		if (Size >= MaxSize)
+		if (size >= MaxSize)
 			throw MaxSizeReached();
 
-		elements[elementToAppendIndex] = value;
-		++Size;
+		elements[IncreaseIndex(firstElementIndex, size)] = value;
+		++size;
 	}
 
 	public void Prepend(int value)
 	{
-		if (Size >= MaxSize)
+		if (size >= MaxSize)
 			throw MaxSizeReached();
 
-		firstElementIndex = PreviousIndex(firstElementIndex);
-		++Size;
+		firstElementIndex = (firstElementIndex > 0 ? firstElementIndex : MaxSize) - 1;
+		++size;
 		elements[firstElementIndex] = value;
 	}
 
@@ -128,26 +132,22 @@ public class IntDeque
 
 	public void RemoveFirst(int count)
 	{
-		if (Size < count)
+		if (size < count)
 			throw InvalidElementsToRemoveCount(count);
 
 		firstElementIndex = IncreaseIndex(firstElementIndex, count);
-		Size -= count;
+		size -= count;
 	}
 
 	public void RemoveLast() => RemoveLast(1);
 
 	public void RemoveLast(int count)
 	{
-		if (Size < count)
+		if (size < count)
 			throw InvalidElementsToRemoveCount(count);
 
-		Size -= count;
+		size -= count;
 	}
-
-	private int PreviousIndex(int index) => index > 0 ? index - 1 : MaxSize - 1;
-
-	private int NextIndex(int index) => index < MaxSize - 1 ? index + 1 : 0;
 
 	private int DecreaseIndex(int index, int decrement)
 	{
@@ -171,10 +171,10 @@ public class IntDeque
 		return length >= 0 ? length : length + MaxSize;
 	}
 
-	private ArgumentException OutOfSize(int index) => new($"Index {index} is out of size {Size}");
+	private ArgumentException OutOfSize(int index) => new($"Index {index} is out of size {size}");
 
 	private ArgumentException InvalidElementsToRemoveCount(int elementsToRemoveCount)
-		=> new($"Can't remove {elementsToRemoveCount} elements from deque of size {Size}");
+		=> new($"Can't remove {elementsToRemoveCount} elements from deque of size {size}");
 
 	private InvalidOperationException MaxSizeReached() => new($"Max size of {MaxSize} is reached");
 
