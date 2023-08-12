@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<Import Project="..\..\Test.Directory.Build.props" />
+
+	<ItemGroup>
+		<ProjectReference Include="..\Problem3\Problem3.csproj" />
+	</ItemGroup>
+
+</Project>
